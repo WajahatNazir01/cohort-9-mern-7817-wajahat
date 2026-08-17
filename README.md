@@ -1,2 +1,489 @@
 # cohort-9-mern-7817-wajahat
 Cohort 9 — MERN (NodeJS+ReactJS) assignment for Wajahat Nazir
+
+
+
+# Noto
+
+> **Where thoughts take shape.**
+
+Noto is a full-stack note-keeping web application designed to provide a
+simple, clean, and focused way to create, organize, search, and manage
+personal notes.
+
+The project is being developed with a focus on practical full-stack
+development, secure authentication, RESTful APIs, database integration,
+reusable frontend components, and maintainable project structure.
+
+## Features
+
+### Authentication
+
+-   User registration
+-   User login
+-   JWT-based authentication
+-   Protected routes and API endpoints
+-   Authentication state restoration after page refresh
+-   Logout functionality
+-   User-specific notes
+
+### Notes
+
+-   Create notes
+-   Edit existing notes
+-   Delete notes
+-   View all notes
+-   View starred notes
+-   Star and unstar notes
+-   Search notes
+-   Rich-text note editing
+-   Relative note update dates
+
+### User Interface
+
+-   Responsive layout
+-   Desktop sidebar navigation
+-   Mobile bottom navigation
+-   Search bar
+-   Light and dark themes
+-   Reusable loading state
+-   User avatar with first-name initial
+-   Clean note-card based interface
+
+### Planned
+
+-   Trash / deleted notes management
+-   Restore deleted notes
+-   Permanent deletion
+-   Additional note-management improvements
+
+## Tech Stack
+
+### Frontend
+
+-   React
+-   Vite
+-   React Router
+-   Tailwind CSS
+-   Axios
+-   Lucide React
+-   date-fns
+-   Tiptap
+
+### Backend
+
+-   Node.js
+-   Express.js
+-   Prisma ORM
+-   PostgreSQL
+-   JWT authentication
+
+### Development & Quality
+
+-   Git & GitHub
+-   CodeRabbit
+-   SonarQube
+-   Unit testing
+
+## Project Structure
+
+``` text
+Noto/
+├── frontend/
+│   └── src/
+│       ├── api/
+│       │   └── axios.js
+│       ├── components/
+│       │   ├── common/
+│       │   ├── layout/
+│       │   ├── notes/
+│       │   └── ...
+│       ├── context/
+│       │   ├── AuthContext.jsx
+│       │   └── ThemeContext.jsx
+│       ├── pages/
+│       │   ├── Login.jsx
+│       │   └── Dashboard.jsx
+│       ├── services/
+│       │   ├── authService.js
+│       │   └── notesService.js
+│       └── routes/
+│
+└── backend/
+    ├── controllers/
+    ├── middlewares/
+    ├── routes/
+    ├── services/
+    ├── prisma/
+    ├── app.js
+    └── server.js
+```
+
+## Application Architecture
+
+Noto follows a separation-of-concerns approach between the frontend UI,
+frontend API services, backend routes/controllers/services, and database
+layer.
+
+``` text
+React UI
+   │
+   ├── AuthContext
+   ├── ThemeContext
+   └── Components / Pages
+          │
+          ▼
+     Axios API Layer
+          │
+          ▼
+     Express REST API
+          │
+     ┌────┴─────┐
+     │          │
+Controllers  Middleware
+     │          │
+     ▼          ▼
+   Services   JWT Auth
+     │
+     ▼
+   Prisma
+     │
+     ▼
+ PostgreSQL
+```
+
+## Frontend
+
+The frontend is responsible for the user interface, application state,
+navigation, authentication state, and communication with the backend
+API.
+
+### Authentication Flow
+
+``` text
+Login / Register
+       ↓
+   Auth Service
+       ↓
+    Axios API
+       ↓
+  Express Backend
+       ↓
+ JWT Token + User
+       ↓
+ Local Storage
+       ↓
+ AuthContext
+       ↓
+ Protected Dashboard
+```
+
+The authentication context also restores the authenticated user after a
+page refresh by requesting the current user from the backend.
+
+### Notes Flow
+
+``` text
+Dashboard
+   ↓
+NotesScreen
+   ↓
+notesService
+   ↓
+Axios
+   ↓
+Notes API
+   ↓
+Backend
+   ↓
+Database
+```
+
+The dashboard controls the active notes section and search state, while
+`NotesScreen` is responsible for loading the appropriate notes based on
+the current section and search query.
+
+## Notes API
+
+The frontend currently communicates with the following note endpoints:
+
+  Method   Endpoint                 Purpose
+  -------- ------------------------ -----------------------
+  POST     `/api/notes`             Create a note
+  GET      `/api/notes`             Get all notes
+  GET      `/api/notes/:id`         Get a single note
+  PATCH    `/api/notes/:id`         Update a note
+  DELETE   `/api/notes/:id`         Delete a note
+  PATCH    `/api/notes/:id/star`    Star or unstar a note
+  GET      `/api/notes/starred`     Get starred notes
+  GET      `/api/notes/search?q=`   Search notes
+
+All note endpoints are protected by authentication middleware.
+
+## Search
+
+Search is handled through the dashboard state and passed down to the
+notes screen.
+
+``` text
+Topbar
+   ↓
+searchQuery
+   ↓
+Dashboard
+   ↓
+NotesScreen
+   ↓
+searchNotes(query)
+   ↓
+GET /api/notes/search?q=query
+```
+
+The topbar remains responsible only for collecting the search input. API
+communication is handled by the notes service.
+
+## Rich Text Editing
+
+Noto uses Tiptap for note editing.
+
+Notes are stored as HTML generated by the editor, allowing users to
+create formatted content rather than plain text only.
+
+The editor currently supports the functionality provided through the
+configured Tiptap StarterKit and custom editor toolbar.
+
+## Theming
+
+Noto supports light and dark themes through a centralized theme
+configuration using CSS custom properties.
+
+The color system uses a warm, minimal visual style with primary rust
+tones and mustard accents.
+
+Example theme variables include:
+
+``` css
+--color-primary
+--color-primary-hover
+--color-accent
+--color-background
+--color-surface
+--color-text
+--color-text-secondary
+--color-border
+```
+
+Components consume these variables instead of hardcoding theme colors
+throughout the application.
+
+## Error Handling
+
+API requests are handled through frontend service functions.
+
+The notes service uses a shared request handler that logs API failures
+and rethrows the original Axios error so UI components can still access
+backend error responses.
+
+For example:
+
+``` js
+try {
+  return await request();
+} catch (error) {
+  console.error("Notes API request failed:", error);
+  throw error;
+}
+```
+
+This allows components such as the note editor to display backend
+messages through:
+
+``` js
+error.response?.data?.message
+```
+
+## Backend Structure
+
+The backend follows a layered structure:
+
+``` text
+Route
+  ↓
+Authentication Middleware
+  ↓
+Controller
+  ↓
+Service
+  ↓
+Prisma
+  ↓
+PostgreSQL
+```
+
+### Routes
+
+Routes define the available HTTP endpoints and apply authentication
+middleware where required.
+
+### Controllers
+
+Controllers handle HTTP requests and responses while delegating business
+logic to services.
+
+### Services
+
+Services contain the application and database-related business logic.
+
+### Prisma
+
+Prisma provides the database access layer between the backend services
+and PostgreSQL.
+
+## Running the Project
+
+### Prerequisites
+
+Make sure the following are installed:
+
+-   Node.js
+-   npm
+-   PostgreSQL database
+-   Git
+
+### Clone the Repository
+
+``` bash
+git clone <repository-url>
+cd Noto
+```
+
+### Frontend
+
+``` bash
+cd frontend
+npm install
+npm run dev
+```
+
+The Vite development server runs on:
+
+``` text
+http://localhost:5173
+```
+
+### Backend
+
+``` bash
+cd backend
+npm install
+npm run dev
+```
+
+The backend currently runs on:
+
+``` text
+http://localhost:3005
+```
+
+## Environment Variables
+
+Create the required environment files for the frontend and backend.
+
+Do not commit secrets, database credentials, or JWT secrets to the
+repository.
+
+Example backend configuration:
+
+``` env
+DATABASE_URL=your_database_url
+DIRECT_URL=your_direct_database_url
+JWT_SECRET=your_jwt_secret
+```
+
+Use the project's actual environment variable configuration when setting
+up the application locally.
+
+## Development Workflow
+
+The project follows a feature-based Git workflow.
+
+A typical workflow is:
+
+``` text
+Update main
+   ↓
+Create feature branch
+   ↓
+Implement feature
+   ↓
+Run tests
+   ↓
+Run code quality checks
+   ↓
+Commit changes
+   ↓
+Push branch
+   ↓
+Open Pull Request
+   ↓
+Review / CodeRabbit
+   ↓
+Fix review comments
+   ↓
+Merge
+```
+
+## Code Quality
+
+The project uses code-review and static-analysis tools to improve
+maintainability and reliability.
+
+-   **CodeRabbit** is used for automated pull-request reviews.
+-   **SonarQube** is used for code-quality analysis.
+-   Unit testing is part of the development workflow.
+
+## Current Project Status
+
+Noto currently includes:
+
+-   Authentication
+-   Protected dashboard
+-   User-specific notes
+-   Create note
+-   Edit note
+-   Delete note
+-   Star / unstar notes
+-   Starred notes section
+-   Search
+-   Rich-text editor
+-   Light / dark theme
+-   Responsive navigation
+-   API error handling
+-   Loading states
+-   RESTful backend structure
+-   Prisma database integration
+
+The Trash section is currently a placeholder and will be implemented in
+a future iteration.
+
+## Future Improvements
+
+Potential future improvements include:
+
+-   Trash and restore functionality
+-   Permanent note deletion
+-   Better search experience with debouncing
+-   Improved note filtering
+-   User settings
+-   More advanced note organization
+-   Expanded testing coverage
+-   Production deployment
+-   CI/CD pipeline
+
+## Author
+
+**Wajahat Nazir**
+
+Software Engineering student and developer building Noto as a full-stack
+application focused on clean architecture, practical development
+practices, and a simple writing experience.
