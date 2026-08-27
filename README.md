@@ -466,6 +466,14 @@ Noto currently includes:
 The Trash section is currently a placeholder and will be implemented in
 a future iteration.
 
+## Test cases
+-  Frontend test made by jest run  by command -> npm test -- --coverage
+-  Backend testa made in mocha and chai run by command -> npm run test:coverage
+
+## Sonarqube
+-  Sonarqube report passed with A grade sucurity, reliability and quality
+-  with above 87% code coverage
+
 ## Future Improvements
 
 Potential future improvements include:
